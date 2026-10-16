@@ -116,6 +116,8 @@ h1,h2,h3{line-height:1.35;margin:0}
 .legal table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.6;margin:6px 0}
 .legal td{border:1px solid var(--line);padding:6px 8px;vertical-align:top}
 .notes{margin:10px 0 0;padding:10px 14px;border-right:3px solid var(--line);color:var(--ink3);font-size:13px}
+.article .voice{position:sticky;top:calc(env(safe-area-inset-top) + 62px);z-index:5;background:var(--card);padding:8px 0;margin-top:6px;border-bottom:1px solid var(--line2)}
+.legal .reading{background:#fff4d6;border-radius:8px;box-shadow:0 0 0 6px #fff4d6}
 .memo{margin:18px 0 0;background:var(--brassTint);border-radius:12px;padding:14px 16px}
 .memo h3{font-size:14px;color:var(--brass);margin-bottom:4px}
 .memo p{margin:2px 0;font-size:15px}
@@ -209,7 +211,7 @@ const loading={};
 function loadLaw(id){
   if(JCPA_DATA[id])return Promise.resolve(JCPA_DATA[id]);
   if(loading[id])return loading[id];
-  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610161823';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
+  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610161827';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
 }
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -223,19 +225,19 @@ function sectionOf(id){return SECTIONS.find(s=>s.laws.includes(id))}
 function artLabel(n){return /^جدول/.test(n)?n:'المادة '+n}
 /* legal text renderer */
 function renderLegal(src){
-  const out=[];let inLetter=false;
+  const out=[];let inLetter=false,li=-1;
   String(src).split('\n').forEach(raw=>{
-    const l=raw.trim(); if(!l)return;
-    let m;
-    if(l.includes(' | ')){out.push('<table><tr>'+l.split(' | ').map(c=>'<td>'+esc(c)+'</td>').join('')+'</tr></table>');return}
-    if((m=l.match(/^((?:[أ-ي]|هـ))\s*[-.)]\s*(.*)$/))&&m[2]){inLetter=true;out.push(`<div class="lv1"><span class="lb">${esc(m[1])}</span><p>${esc(m[2])}</p></div>`);return}
-    if((m=l.match(/^\(?([٠-٩0-9]{1,2})\s*[-.)]\s*(.*)$/))&&m[2]){out.push(`<div class="${inLetter?'lv2':'lv1'}"><span class="lb">${esc(m[1])}</span><p>${esc(m[2])}</p></div>`);return}
-    if((m=l.match(/^([^:]{2,40}?)\s*:\s*(.+)$/))&&!/[.،]/.test(m[1])){out.push(`<div class="def"><b>${esc(m[1])}</b><p>${esc(m[2])}</p></div>`);return}
-    inLetter=false; out.push('<p>'+esc(l)+'</p>');
+    const l=raw.trim(); if(!l)return; li++;
+    const A=` data-li="${li}"`;let m;
+    if(l.includes(' | ')){out.push('<table><tr'+A+'>'+l.split(' | ').map(c=>'<td>'+esc(c)+'</td>').join('')+'</tr></table>');return}
+    if((m=l.match(/^((?:[أ-ي]|هـ))\s*[-.)]\s*(.*)$/))&&m[2]){inLetter=true;out.push(`<div class="lv1"${A}><span class="lb">${esc(m[1])}</span><p>${esc(m[2])}</p></div>`);return}
+    if((m=l.match(/^\(?([٠-٩0-9]{1,2})\s*[-.)]\s*(.*)$/))&&m[2]){out.push(`<div class="${inLetter?'lv2':'lv1'}"${A}><span class="lb">${esc(m[1])}</span><p>${esc(m[2])}</p></div>`);return}
+    if((m=l.match(/^([^:]{2,40}?)\s*:\s*(.+)$/))&&!/[.،]/.test(m[1])){out.push(`<div class="def"${A}><b>${esc(m[1])}</b><p>${esc(m[2])}</p></div>`);return}
+    inLetter=false; out.push('<p'+A+'>'+esc(l)+'</p>');
   });
   return out.join('').replace(/<\/table><table>/g,'');
 }
-/* ---------- voice ---------- */
+/* ---------- voice: reads line by line, can pause and continue from the same place ---------- */
 const Voice={
   list(){const v=('speechSynthesis' in window)?speechSynthesis.getVoices():[];
     const ar=v.filter(x=>/^ar([-_]|$)/i.test(x.lang));
@@ -243,12 +245,56 @@ const Voice={
     return ar.sort((a,b)=>sc(b)-sc(a));},
   pick(){const l=this.list(),n=S.get('voice','');return l.find(x=>x.name===n)||l[0]||null},
   label(x){const c=((x.lang||'').split(/[-_]/)[1]||'').toUpperCase();const m={JO:'الأردن',SA:'السعودية',EG:'مصر',AE:'الإمارات',KW:'الكويت',QA:'قطر',BH:'البحرين',OM:'عُمان',LB:'لبنان',SY:'سوريا',PS:'فلسطين',IQ:'العراق',MA:'المغرب',DZ:'الجزائر',TN:'تونس',LY:'ليبيا',YE:'اليمن'};return x.name.replace(/Microsoft |Google |\(Natural\)|Online/gi,'').trim()+(m[c]?' — '+m[c]:'')},
-  speak(text){if(!('speechSynthesis' in window)){toast('القراءة الصوتية غير مدعومة على هذا المتصفح');return}
-    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=this.pick();if(v){u.voice=v;u.lang=v.lang}else u.lang='ar-JO';
-    u.rate=S.get('rate',0.9);speechSynthesis.speak(u)},
-  stop(){if('speechSynthesis' in window)speechSynthesis.cancel()}
+  st:{chunks:[],i:0,playing:false,tok:0,key:null},
+  utter(text){const u=new SpeechSynthesisUtterance(text);const v=this.pick();if(v){u.voice=v;u.lang=v.lang}else u.lang='ar-JO';u.rate=S.get('rate',0.9);return u},
+  // build chunks: each legal line, long lines split at sentence/clause ends
+  load(key,src,title){
+    const st=this.st; if(st.key===key&&st.chunks.length)return;
+    this.halt(); const chunks=[];
+    if(title)chunks.push({t:title,li:-1});
+    String(src).split('\n').map(x=>x.trim()).filter(Boolean).forEach((l,li)=>{
+      l=l.replace(/\s\|\s/g,'، ');
+      const parts=l.length>220?l.split(/(?<=[.؛،:])\s+/):[l];let buf='';
+      parts.forEach(p=>{if((buf+' '+p).length>220&&buf){chunks.push({t:buf,li});buf=p}else buf=buf?buf+' '+p:p});
+      if(buf)chunks.push({t:buf,li});
+    });
+    Object.assign(st,{chunks,i:0,playing:false,key});
+  },
+  next(){
+    const st=this.st; if(!st.playing)return;
+    if(st.i>=st.chunks.length){st.playing=false;st.i=0;this.mark(-2);this.ui();return}
+    const tok=st.tok,c=st.chunks[st.i];this.mark(c.li);
+    const u=this.utter(c.t);
+    u.onend=()=>{if(tok!==st.tok)return;st.i++;this.next()};
+    u.onerror=()=>{if(tok!==st.tok)return;st.i++;this.next()};
+    speechSynthesis.speak(u);
+  },
+  toggle(){
+    if(!('speechSynthesis' in window)){toast('القراءة الصوتية غير مدعومة على هذا المتصفح');return}
+    const st=this.st;
+    if(st.playing){st.playing=false;st.tok++;speechSynthesis.cancel();this.ui();return}
+    st.playing=true;st.tok++;speechSynthesis.cancel();this.ui();this.next();
+  },
+  restart(){const st=this.st;st.tok++;speechSynthesis.cancel();st.i=0;st.playing=false;this.mark(-2);this.toggle()},
+  seek(li){const st=this.st;const k=st.chunks.findIndex(c=>c.li===li);if(k<0)return;st.tok++;speechSynthesis.cancel();st.i=k;st.playing=false;this.toggle()},
+  halt(){const st=this.st;st.tok++;st.playing=false;if('speechSynthesis' in window)speechSynthesis.cancel()},
+  stop(){this.halt();this.st.key=null;this.st.chunks=[]},
+  mark(li){document.querySelectorAll('.legal .reading').forEach(e=>e.classList.remove('reading'));
+    if(li>=0){const e=document.querySelector(`.legal [data-li="${li}"]`);if(e){e.classList.add('reading');const r=e.getBoundingClientRect();if(r.top<80||r.bottom>innerHeight-40)e.scrollIntoView({block:'center',behavior:'smooth'})}}},
+  ui(){const b=document.getElementById('vPlay');if(!b)return;const st=this.st;
+    const started=st.i>0||st.playing;
+    b.innerHTML=st.playing?'⏸ إيقاف مؤقت':(started?'▶ متابعة القراءة':'🔊 استمع للمادة');
+    b.classList.toggle('pri',st.playing);
+    const r=document.getElementById('vRestart');if(r)r.style.display=started?'':'none';}
 };
-if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{if(location.hash.startsWith('#/settings'))route()}}
+function voiceControls(){
+  const vs=Voice.list(),cur=Voice.pick(),rate=S.get('rate',0.9);
+  return `<div class="voice"><button class="btn" id="vPlay" onclick="Voice.toggle()">🔊 استمع للمادة</button><button class="btn" id="vRestart" style="display:none" onclick="Voice.restart()">⟲ من البداية</button>
+   <select class="btn" aria-label="الصوت" onchange="S.set('voice',this.value);if(Voice.st.playing){Voice.toggle();Voice.toggle()}">${vs.length?vs.map(v=>`<option value="${esc(v.name)}" ${cur&&v.name===cur.name?'selected':''}>${esc(Voice.label(v))}</option>`).join(''):'<option>الصوت الافتراضي</option>'}</select>
+   <select class="btn" aria-label="السرعة" onchange="S.set('rate',+this.value);if(Voice.st.playing){Voice.toggle();Voice.toggle()}">${[[0.75,'بطيء'],[0.9,'عادي'],[1.05,'سريع']].map(([v,t])=>`<option value="${v}" ${v==rate?'selected':''}>${t}</option>`).join('')}</select>
+   <small class="muted">اضغط على أي فقرة أثناء القراءة لتبدأ منها</small></div>`;
+}
+if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{const v=document.querySelector('.article .voice');if(v){v.outerHTML=voiceControls();Voice.ui()}if(location.hash.startsWith('#/settings'))route()}}
 /* ---------- views ---------- */
 function viewHome(){
   Voice.stop();
@@ -334,14 +380,16 @@ function renderArticle(){
     return `<div class="q" data-key="${key}" data-correct="${order.indexOf(q.a)}"><div class="qt"><em>س${qi+1}</em>${esc(q.q)}</div>${order.map((k,j)=>`<button class="opt" onclick="answer(this,${j})"><span class="l">${LETTERS[j]}</span><span>${esc(q.o[k])}</span></button>`).join('')}${key in ans?`<div class="verdict muted">${ans[key]?'أجبت عنه صحيحاً سابقاً':'أخطأت فيه سابقاً — جرّب مرة أخرى'}</div>`:''}</div>`}).join('');
   $('#art').innerHTML=`<article class="article">
     <div class="artTop"><span class="seal">${/^جدول/.test(a.n)?'ج':esc(a.n.split(' ')[0])}</span><div>${a.chapter?`<div class="chap">${esc(a.chapter)}</div>`:''}<h2>${esc(artLabel(a.n))}${a.title?' — '+esc(a.title):''}</h2></div></div>
-    <div class="legal">${renderLegal(a.source)}</div>
+    ${voiceControls()}
+    <div class="legal" onclick="const e=event.target.closest('[data-li]');if(e&&(Voice.st.playing||Voice.st.i>0))Voice.seek(+e.dataset.li)">${renderLegal(a.source)}</div>
     ${a.notes&&a.notes.length?`<div class="notes">${a.notes.map(esc).join('<br>')}</div>`:''}
-    <div class="voice"><button class="btn" onclick="Voice.speak(curLaw.articles[curIdx].source.replace(/\\|/g,' '))">🔊 استمع للمادة</button><button class="btn" onclick="Voice.stop()">إيقاف</button></div>
     ${a.memo?`<div class="memo"><h3>احفظ من هذه المادة</h3>${a.memo.split('\n').map(l=>'<p>'+esc(l)+'</p>').join('')}</div>`:''}
     ${a.qs.length?`<div class="qs"><h3>أسئلة على المادة</h3>${qs}</div>`:''}
     <div class="pager"><button class="btn big" ${curIdx===0?'disabled':''} onclick="openArt(${curIdx-1})">› السابقة</button><button class="btn big pri" ${curIdx===d.articles.length-1?'disabled':''} onclick="openArt(${curIdx+1})">التالية ‹</button></div>
   </article>`;
+  _afterArt();
 }
+function _afterArt(){const a=curLaw.articles[curIdx];Voice.load(curLaw.id+'|'+a.n,a.source,artLabel(a.n)+(a.title?'، '+a.title:''));Voice.ui()}
 function answer(btn,j){
   const q=btn.closest('.q');if(q.dataset.done)return;q.dataset.done=1;
   const c=+q.dataset.correct,ok=j===c,opts=q.querySelectorAll('.opt');
@@ -405,7 +453,7 @@ function viewSettings(){
    <div class="field"><label for="vc">صوت القراءة</label><select id="vc" onchange="S.set('voice',this.value);toast('تم اختيار الصوت')">${vs.length?vs.map(v=>`<option value="${esc(v.name)}" ${cur&&v.name===cur.name?'selected':''}>${esc(Voice.label(v))}</option>`).join(''):'<option>لا يوجد صوت عربي على هذا الجهاز</option>'}</select>
      <small class="muted">يُفضَّل الصوت الأردني تلقائياً إذا كان متوفراً على الجهاز.</small></div>
    <div class="field"><label for="rt">سرعة القراءة</label><select id="rt" onchange="S.set('rate',+this.value)">${[[0.75,'بطيئة'],[0.9,'عادية'],[1.05,'سريعة']].map(([v,t])=>`<option value="${v}" ${v==rate?'selected':''}>${t}</option>`).join('')}</select>
-     <div class="voice"><button class="btn" onclick="Voice.speak('يسمى هذا القانون قانون ضريبة الدخل')">جرّب الصوت</button></div></div>
+     <div class="voice"><button class="btn" onclick="Voice.halt();speechSynthesis.speak(Voice.utter('يسمى هذا القانون قانون ضريبة الدخل'))">جرّب الصوت</button></div></div>
    <div class="field"><label>التقدم المحفوظ</label><small class="muted">التقدم محفوظ على هذا الجهاز فقط.</small><div class="voice"><button class="btn" onclick="if(confirm('حذف كل التقدم والإجابات المحفوظة؟')){Object.keys(localStorage).filter(k=>k.startsWith('jcpa2_')&&!/name|voice|rate/.test(k)).forEach(k=>localStorage.removeItem(k));toast('تم حذف التقدم')}">حذف التقدم</button></div></div>
   </div>`;
 }
