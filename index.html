@@ -226,7 +226,7 @@ body{padding-bottom:0}
 <section id="legislation" class="subject">
   <div class="subject-header">
     <button class="back" onclick="backHome()">← الرئيسية</button>
-    <h1>⚖️ ورقة التشريعات <span style="font-size:12px;opacity:.75">v35</span></h1>
+    <h1>⚖️ ورقة التشريعات <span style="font-size:12px;opacity:.75">v36</span></h1>
   </div>
   <div class="subject-body">
     <div class="progress-box">
@@ -1665,6 +1665,62 @@ function updateLegislationProgress(){
   const t=document.getElementById('legislationProgressText'), b=document.getElementById('legislationProgressBar');
   if(t) t.textContent=p+'%'; if(b) b.style.width=p+'%';
 }
+</script>
+
+<script>
+/* v36: اختيار الصوت — الأولوية للهجة الأردنية (ar-JO) ثم بقية الأصوات العربية، مع قائمة لاختيار الصوت والسرعة */
+(function(){
+  const VK='jcpa_voice_name', RK='jcpa_voice_rate';
+  function arabicVoices(){
+    const v=('speechSynthesis' in window)?speechSynthesis.getVoices():[];
+    const ar=v.filter(x=>/^ar([-_]|$)/i.test(x.lang)||/Arabic|العربية/i.test(x.name));
+    function score(x){let s=0;if(/ar[-_]JO/i.test(x.lang)||/Jordan|الأردن/i.test(x.name))s+=100;
+      if(/ar[-_](PS|SY|LB)/i.test(x.lang))s+=40; if(/Natural|Online|Neural|Enhanced|Premium|محسّن/i.test(x.name))s+=20;
+      if(/ar[-_]SA/i.test(x.lang))s+=5; return s;}
+    return ar.sort((a,b)=>score(b)-score(a));
+  }
+  function pickVoice(){
+    const list=arabicVoices(); let saved=null; try{saved=localStorage.getItem(VK)}catch(e){}
+    return list.find(x=>x.name===saved)||list[0]||null;
+  }
+  function label(x){
+    const c=(x.lang||'').split(/[-_]/)[1]||''; const map={JO:'الأردن',SA:'السعودية',EG:'مصر',AE:'الإمارات',PS:'فلسطين',SY:'سوريا',LB:'لبنان',KW:'الكويت',QA:'قطر',BH:'البحرين',OM:'عُمان',IQ:'العراق',MA:'المغرب',DZ:'الجزائر',TN:'تونس',LY:'ليبيا',YE:'اليمن'};
+    return x.name.replace(/Microsoft |Google |\(Natural\)|Online/gi,'').trim()+(map[c.toUpperCase()]?' — '+map[c.toUpperCase()]:'');
+  }
+  window.jcpaSpeak=function(text,statusId){
+    if(!('speechSynthesis' in window)){alert('المتصفح لا يدعم القراءة الصوتية.');return;}
+    jcpaStopSpeech();
+    const clean=String(text).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+    const u=new SpeechSynthesisUtterance(clean);
+    const v=pickVoice(); u.lang=v?v.lang:'ar-JO'; if(v)u.voice=v;
+    let r=0.9; try{r=Number(localStorage.getItem(RK)||0.9)}catch(e){} u.rate=r; u.pitch=1;
+    jcpaSpeechUtterance=u;
+    const st=document.getElementById(statusId);
+    if(st) st.textContent='🔊 '+(v?label(v):'صوت عربي');
+    u.onend=()=>{if(st)st.textContent='انتهت القراءة';};
+    u.onerror=()=>{if(st)st.textContent='تعذر تشغيل الصوت';};
+    speechSynthesis.speak(u);
+  };
+  function fillPickers(){
+    const list=arabicVoices(), cur=pickVoice();
+    document.querySelectorAll('select.jcpa-voice-pick').forEach(sel=>{
+      sel.innerHTML=list.length?list.map(x=>`<option value="${escapeHtml(x.name)}"${cur&&x.name===cur.name?' selected':''}>${escapeHtml(label(x))}</option>`).join(''):'<option>لا يوجد صوت عربي على هذا الجهاز</option>';
+    });
+    let r='0.9'; try{r=localStorage.getItem(RK)||'0.9'}catch(e){}
+    document.querySelectorAll('select.jcpa-rate-pick').forEach(sel=>sel.value=r);
+  }
+  window.jcpaSetVoice=function(name){try{localStorage.setItem(VK,name)}catch(e){} fillPickers();};
+  window.jcpaSetRate=function(r){try{localStorage.setItem(RK,r)}catch(e){} fillPickers();};
+  const origBox=window.jcpaVoiceBox;
+  window.jcpaVoiceBox=function(id,text){
+    const html=origBox(id,text);
+    const extra=`<select class="jcpa-voice-pick" onchange="jcpaSetVoice(this.value)" style="padding:7px;border-radius:10px;border:1px solid #cfd9e4;font-family:inherit;max-width:220px"></select>`+
+      `<select class="jcpa-rate-pick" onchange="jcpaSetRate(this.value)" style="padding:7px;border-radius:10px;border:1px solid #cfd9e4;font-family:inherit"><option value="0.75">بطيء</option><option value="0.9">عادي</option><option value="1.05">أسرع</option></select>`;
+    setTimeout(fillPickers,0);
+    return html.replace('<span class="voice-status"',extra+'<span class="voice-status"');
+  };
+  if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=fillPickers; speechSynthesis.getVoices(); }
+})();
 </script>
 <script>if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
 </body>
