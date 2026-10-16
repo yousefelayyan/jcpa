@@ -1,5 +1,5 @@
 // يحفظ ملفات المنصة على الجهاز لتعمل دون إنترنت بعد أول فتح
-const CACHE = 'jcpa-v36';
+const CACHE = 'jcpa-v36b';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

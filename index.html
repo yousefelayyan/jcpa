@@ -1722,6 +1722,35 @@ function updateLegislationProgress(){
   if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=fillPickers; speechSynthesis.getVoices(); }
 })();
 </script>
+
+<style>
+.law-card .law-weight{grid-column:2;justify-self:start;white-space:nowrap;margin-top:8px}
+.law-card.law-soon{opacity:.6;background:#f7f9fb;cursor:default}
+.law-card.law-soon .law-weight{background:#eef1f4;color:#6b7785}
+#jcpaToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#123b63;color:#fff;padding:13px 20px;border-radius:14px;font-size:15px;box-shadow:0 8px 25px #0003;z-index:9999;display:none;max-width:90vw;text-align:center}
+</style>
+<div id="jcpaToast"></div>
+<script>
+(function(){
+  const READY=['قانون الأوراق المالية','قانون تنظيم أعمال التأمين','قانون الشركات','قانون مكافحة غسل الأموال','قانون النزاهة ومكافحة الفساد','قانون ديوان المحاسبة','قانون المنافسة','قانون التأجير التمويلي','رسوم طوابع الواردات'];
+  let tmr=null;
+  window.jcpaToast=function(msg){const t=document.getElementById('jcpaToast');if(!t)return;t.textContent=msg;t.style.display='block';clearTimeout(tmr);tmr=setTimeout(()=>t.style.display='none',2600);};
+  const origOpenLaw=window.openLaw;
+  window.openLaw=function(name){
+    if(READY.indexOf(name)===-1){window.jcpaToast('⏳ '+name+' — المحتوى قيد التجهيز وسيُضاف قريباً');return;}
+    return origOpenLaw.apply(this,arguments);
+  };
+  const origGroup=window.openLawGroup;
+  window.openLawGroup=function(){
+    const r=origGroup.apply(this,arguments);
+    document.querySelectorAll('#lawGroupItems .law-card').forEach(function(c){
+      const t=(c.querySelector('.law-title')||{}).textContent||'';
+      if(READY.indexOf(t.trim())===-1){c.classList.add('law-soon');const w=c.querySelector('.law-weight');if(w)w.textContent='⏳ قريباً';}
+    });
+    return r;
+  };
+})();
+</script>
 <script>if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
 </body>
 </html>
