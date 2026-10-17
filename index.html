@@ -154,6 +154,22 @@ select.btn{padding:8px 10px}
 .field{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
 .field label{display:block;font-weight:600;margin-bottom:6px}
 .field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.papersGrid{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:8px 16px;margin-bottom:24px}
+.yr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line2)}
+.yr:last-child{border-bottom:0}
+.yr>b{min-width:56px;color:var(--brass);font-size:17px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 14px;font-weight:600;font-size:14px}
+.chip small{color:var(--ink3);font-weight:400;margin-right:6px}
+.pq .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;font-size:13px}
+.tag{border-radius:999px;padding:2px 10px;font-weight:600;background:var(--brassTint);color:var(--brass)}
+.tag.law{background:var(--priTint);color:var(--pri)}
+.tag.changed{background:#fff1d6;color:#9a5b00}
+.tag.obsolete{background:#eceff1;color:#5b6770}
+.tag.unverified{background:#f3e8f7;color:#7a3f8f}
+.expl{margin-top:8px;font-size:14px;color:var(--ink2);background:var(--paper);border-radius:10px;padding:10px 12px}
+details.model{margin-top:10px}
+details.model summary{cursor:pointer;font-weight:600;color:var(--pri)}
+.qbody{white-space:pre-line}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:50;display:none;max-width:90vw}
 .drawerBtn{display:none}
 @media (max-width:860px){
@@ -177,6 +193,8 @@ select.btn{padding:8px 10px}
 <div class="toast" id="toast"></div>
 <script>
 const META={"insurance": {"name": "قانون تنظيم أعمال التأمين", "full": "قانون تنظيم أعمال التأمين رقم (12) لسنة 2021", "icon": "☂️", "a": 111, "q": 295}, "aqaba": {"name": "قانون منطقة العقبة الاقتصادية الخاصة", "full": "قانون منطقة العقبة الاقتصادية الخاصة رقم (32) لسنة 2000", "icon": "⚓", "a": 68, "q": 179}, "insolvency": {"name": "قانون الإعسار", "full": "قانون الإعسار رقم (21) لسنة 2018", "icon": "⚖️", "a": 142, "q": 374}, "whistle": {"name": "نظام حماية المبلغين والشهود", "full": "نظام حماية المبلغين والشهود والمخبرين والخبراء في قضايا الفساد لسنة 2014", "icon": "🛡️", "a": 13, "q": 36}, "social": {"name": "قانون الضمان الاجتماعي", "full": "قانون الضمان الاجتماعي رقم (1) لسنة 2014 وتعديلاته", "icon": "🛡️", "a": 118, "q": 324}, "trade": {"name": "قانون الصناعة والتجارة", "full": "قانون الصناعة والتجارة رقم (18) لسنة 1998 وتعديلاته", "icon": "🏭", "a": 24, "q": 62}, "audit": {"name": "قانون ديوان المحاسبة", "full": "قانون ديوان المحاسبة رقم (28) لسنة 1952 وتعديلاته", "icon": "📋", "a": 28, "q": 61}, "stamp": {"name": "رسوم طوابع الواردات", "full": "قانون رسوم طوابع الواردات رقم (20) لسنة 2001", "icon": "🧾", "a": 24, "q": 56}, "insolvency_sys": {"name": "نظام الإعسار", "full": "نظام الإعسار رقم (8) لسنة 2019", "icon": "📑", "a": 53, "q": 142}, "integrity": {"name": "قانون النزاهة ومكافحة الفساد", "full": "قانون النزاهة ومكافحة الفساد رقم (13) لسنة 2016", "icon": "🏛️", "a": 37, "q": 91}, "investment": {"name": "قانون الاستثمار", "full": "قانون البيئة الاستثمارية رقم (21) لسنة 2022", "icon": "📈", "a": 53, "q": 134}, "sales": {"name": "قانون ضريبة المبيعات", "full": "قانون الضريبة العامة على المبيعات رقم (6) لسنة 1994 وتعديلاته", "icon": "🛒", "a": 78, "q": 212}, "banks": {"name": "قانون البنوك", "full": "قانون البنوك رقم (28) لسنة 2000 وتعديلاته", "icon": "🏦", "a": 102, "q": 254}, "competition": {"name": "قانون المنافسة", "full": "قانون المنافسة لسنة 2004", "icon": "🤝", "a": 29, "q": 77}, "accounting": {"name": "تنظيم مهنة المحاسبة القانونية", "full": "قانون تنظيم مهنة المحاسبة القانونية رقم (73) لسنة 2003", "icon": "📒", "a": 50, "q": 131}, "leasing": {"name": "قانون التأجير التمويلي", "full": "قانون التأجير التمويلي رقم (45) لسنة 2008", "icon": "💼", "a": 29, "q": 87}, "securities": {"name": "قانون الأوراق المالية", "full": "قانون الأوراق المالية رقم (18) لسنة 2017", "icon": "📊", "a": 119, "q": 291}, "aml": {"name": "قانون مكافحة غسل الأموال", "full": "قانون مكافحة غسل الأموال وتمويل الإرهاب رقم (20) لسنة 2021", "icon": "🕵️", "a": 45, "q": 118}, "income": {"name": "قانون ضريبة الدخل", "full": "قانون ضريبة الدخل رقم (34) لسنة 2014 وتعديلاته", "icon": "🧾", "a": 82, "q": 233}, "companies": {"name": "قانون الشركات", "full": "قانون الشركات رقم (22) لسنة 1997 وتعديلاته حتى القانون المعدل رقم (20) لسنة 2023", "icon": "🏢", "a": 314, "q": 880}};
+const PAPERS=[{"id": "2022-12", "label": "دورة كانون الأول 2022", "session": "كانون الأول", "year": 2022, "n": 87}, {"id": "2022-07", "label": "دورة تموز 2022", "session": "تموز", "year": 2022, "n": 37}, {"id": "2022-9a07502e", "label": "أسئلة متوقعة — الناظر", "session": "أسئلة متوقعة — الناظر", "year": 2022, "n": 35}];
+const PAST_COUNT={"income": 22, "sales": 14, "companies": 29, "insolvency": 9, "accounting": 5, "investment": 1, "stamp": 3, "audit": 2, "competition": 2, "aml": 1, "integrity": 2, "social": 17, "securities": 14, "leasing": 2, "insurance": 3};
 const SECTIONS=[
  {id:'tax',title:'ضريبة الدخل والمبيعات',marks:30,color:'#0f4f4a',laws:['income','sales']},
  {id:'companies',title:'قانون الشركات',marks:18,color:'#14695f',laws:['companies']},
@@ -211,7 +229,7 @@ const loading={};
 function loadLaw(id){
   if(JCPA_DATA[id])return Promise.resolve(JCPA_DATA[id]);
   if(loading[id])return loading[id];
-  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610161827';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
+  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610171039';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
 }
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -324,6 +342,8 @@ function viewLeg(){
   <h3 class="sectionTitle">توزيع علامات الورقة (من ١٠٠)</h3>
   <div class="marks">${SECTIONS.map(s=>`<div style="flex:${s.marks};background:${s.color}" title="${esc(s.title)}">${s.marks}</div>`).join('')}</div>
   <div class="legend">${SECTIONS.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.title)}</span>`).join('')}</div>
+  ${PAPERS.length?`<h3 class="sectionTitle">أسئلة دورات سابقة</h3><div class="papersGrid">${[...new Set(PAPERS.map(p=>p.year))].sort((a,b)=>b-a).map(y=>`<div class="yr"><b>${y}</b>${PAPERS.filter(p=>p.year===y).map(p=>`<button class="chip" onclick="go('/paper/${p.id}')">${esc(p.session)}<small>${p.n} سؤال</small></button>`).join('')}</div>`).join('')}</div>`:''}
+  <h3 class="sectionTitle">القوانين حسب أقسام الورقة</h3>
   <div class="rows">${SECTIONS.map(s=>{const p=sectionPct(s);return `
     <button class="row" onclick="go('/sec/${s.id}')"><span class="seal">${s.marks}<small>علامة</small></span>
       <span class="main"><b>${esc(s.title)}</b><small>${s.laws.length>1?s.laws.length+' تشريعات':esc(META[s.laws[0]].full)}</small><div class="bar"><i style="width:${p}%"></i></div></span>
@@ -356,6 +376,7 @@ async function viewLaw(id,n,tab){
    <div class="tabs" role="tablist">
      <button class="${curTab==='study'?'on':''}" onclick="go('/law/${id}/${encodeURIComponent(arts[curIdx].n)}')">دراسة المواد</button>
      <button class="${curTab==='quiz'?'on':''}" onclick="go('/quiz/${id}')">اختبار سريع</button>
+     ${PAST_COUNT[id]?`<button onclick="go('/past/${id}')">أسئلة سنوات سابقة <small>(${PAST_COUNT[id]})</small></button>`:''}
    </div>
    <div class="study"><aside class="index"><input type="search" placeholder="ابحث برقم المادة أو كلمة…" oninput="filterIndex(this.value)"><div class="list" id="idxList"></div></aside><section id="art"></section></div>`;
   buildIndex('');renderArticle();
@@ -457,6 +478,46 @@ function viewSettings(){
    <div class="field"><label>التقدم المحفوظ</label><small class="muted">التقدم محفوظ على هذا الجهاز فقط.</small><div class="voice"><button class="btn" onclick="if(confirm('حذف كل التقدم والإجابات المحفوظة؟')){Object.keys(localStorage).filter(k=>k.startsWith('jcpa2_')&&!/name|voice|rate/.test(k)).forEach(k=>localStorage.removeItem(k));toast('تم حذف التقدم')}">حذف التقدم</button></div></div>
   </div>`;
 }
+/* ---------- past exam questions ---------- */
+function loadExams(){return loadLaw('exams')}
+const ST_LABEL={changed:'تغيّرت حسب القانون الحالي',obsolete:'حكم ملغى حالياً',unverified:'غير مؤكد — قانون غير مدرج'};
+function pastCard(q,showLaw){
+  const key='past|'+q.pid+'|'+q.num;
+  const lawName=q.law&&META[q.law]?META[q.law].name:(q.law||'').replace(/^other:/,'');
+  const meta=`<div class="meta"><span class="tag">${esc(q.label)} — سؤال ${q.num}</span>${showLaw&&lawName?`<span class="tag law">${esc(lawName)}</span>`:''}${q.status&&q.status!=='valid'?`<span class="tag ${q.status}">${ST_LABEL[q.status]||q.status}</span>`:''}</div>`;
+  const art=q.article&&META[q.law]?` <a href="#/law/${q.law}/${encodeURIComponent(q.article)}">افتح المادة ${esc(q.article)}</a>`:'';
+  const expl=(q.explanation||'')+(q.status==='changed'&&q.orig_answer!=null?` (إجابة الامتحان وقتها: ${LETTERS[q.orig_answer]})`:'');
+  if(q.type==='essay'||!q.o){
+    return `<div class="q pq">${meta}<div class="qt qbody">${esc(q.q)}</div>${q.model_answer?`<details class="model"><summary>الإجابة النموذجية</summary><div class="expl qbody">${esc(q.model_answer)}${art}</div></details>`:''}</div>`;
+  }
+  const hasAns=Number.isInteger(q.answer);
+  return `<div class="q pq" data-key="${hasAns?key:''}" data-correct="${hasAns?q.answer:-1}" data-cb="pastCb"><div class="qt qbody">${esc(q.q)}</div>${meta}
+    ${q.o.map((o,j)=>`<button class="opt" onclick="${hasAns?`answer(this,${j})`:`this.closest('.q').querySelector('.expl').style.display='block'`}"><span class="l">${LETTERS[j]}</span><span>${esc(o)}</span></button>`).join('')}
+    <div class="expl" style="display:none">${esc(expl)}${art}</div></div>`;
+}
+function pastCb(){const e=event&&event.target&&event.target.closest('.q');if(e){const x=e.querySelector('.expl');if(x)x.style.display='block'}}
+async function viewPast(id){
+  const m=META[id];
+  setTop(`${backBtn('/law/'+id,m.name)}<div class="crumb"><small>${esc(m.name)}</small><b>أسئلة سنوات سابقة</b></div>`);
+  $('#view').innerHTML='<div class="empty">جارٍ التحميل…</div>';
+  const ex=await loadExams();const list=[];
+  ex.papers.forEach(p=>p.questions.forEach(q=>{if(q.law===id)list.push(Object.assign({pid:p.id,label:p.label,year:p.year},q))}));
+  list.sort((a,b)=>b.year-a.year||a.num-b.num);
+  const c={valid:0,changed:0,obsolete:0};list.forEach(q=>c[q.status]=(c[q.status]||0)+1);
+  $('#view').innerHTML=`<div class="quizBox"><div class="lawHead"><span class="seal ic">${m.icon}</span><div><h1>أسئلة سنوات سابقة</h1><p>${esc(m.name)} — ${list.length} سؤالاً من دورات الامتحان الرسمية، محلولة حسب القانون الحالي${c.changed?` • ${c.changed} تغيّرت إجابتها`:''}</p></div></div>
+    ${list.map(q=>pastCard(q,false)).join('')||'<div class="empty">لا توجد أسئلة سابقة على هذا القانون.</div>'}</div>`;
+}
+async function viewPaper(pid){
+  setTop(`${backBtn('/leg','التشريعات')}<div class="crumb"><small>أسئلة دورات سابقة</small><b>…</b></div>`);
+  const ex=await loadExams();const p=ex.papers.find(x=>x.id===pid);if(!p)return go('/leg');
+  setTop(`${backBtn('/leg','التشريعات')}<div class="crumb"><small>أسئلة دورات سابقة</small><b>${esc(p.label)}</b></div>`);
+  const mc=p.questions.filter(q=>q.type!=='essay'&&q.o&&Number.isInteger(q.answer)).length;
+  window.PAPER_SCORE={n:0,c:0,total:mc};
+  $('#view').innerHTML=`<div class="quizBox"><div class="lawHead"><div><h1>${esc(p.label)}</h1><p>الورقة الأولى — التشريعات • ${p.questions.length} سؤالاً • الإجابات حسب القوانين الحالية</p></div><div class="muted" id="paperScore"></div></div>
+    ${p.questions.map(q=>pastCard(Object.assign({pid:p.id,label:p.label},q),true)).join('')}</div>`;
+}
+const _pastCb=pastCb;
+pastCb=function(ok){_pastCb();if(window.PAPER_SCORE&&location.hash.startsWith('#/paper')){PAPER_SCORE.n++;if(ok)PAPER_SCORE.c++;const e=$('#paperScore');if(e)e.textContent=`أجبت ${PAPER_SCORE.n} من ${PAPER_SCORE.total} • الصحيح ${PAPER_SCORE.c}`}};
 /* ---------- router ---------- */
 function route(force){
   Voice.stop();
@@ -471,6 +532,8 @@ function route(force){
     case 'mock':return viewMock();
     case 'review':return viewReview();
     case 'settings':return viewSettings();
+    case 'past':return viewPast(h[1]);
+    case 'paper':return viewPaper(h[1]);
     default:return viewHome();
   }
 }
