@@ -229,7 +229,7 @@ const loading={};
 function loadLaw(id){
   if(JCPA_DATA[id])return Promise.resolve(JCPA_DATA[id]);
   if(loading[id])return loading[id];
-  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610212045';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
+  return loading[id]=new Promise((res,rej)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=202610212355';s.onload=()=>res(JCPA_DATA[id]);s.onerror=()=>{delete loading[id];rej(new Error('load'))};document.head.appendChild(s)});
 }
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -305,6 +305,11 @@ const Voice={
     b.classList.toggle('pri',st.playing);
     const r=document.getElementById('vRestart');if(r)r.style.display=started?'':'none';}
 };
+document.addEventListener('visibilitychange',()=>{
+  const st=Voice.st; if(document.visibilityState!=='visible'||!st.playing)return;
+  // iOS/Safari pauses speech in the background; when you come back, continue from the same paragraph
+  setTimeout(()=>{ if(st.playing && !speechSynthesis.speaking){ st.tok++; speechSynthesis.cancel(); Voice.next(); } },400);
+});
 function voiceControls(){
   const vs=Voice.list(),cur=Voice.pick(),rate=S.get('rate',0.9);
   return `<div class="voice"><button class="btn" id="vPlay" onclick="Voice.toggle()">🔊 استمع للمادة</button><button class="btn" id="vRestart" style="display:none" onclick="Voice.restart()">⟲ من البداية</button>
@@ -342,12 +347,13 @@ function viewLeg(){
   <h3 class="sectionTitle">توزيع علامات الورقة (من ١٠٠)</h3>
   <div class="marks">${SECTIONS.map(s=>`<div style="flex:${s.marks};background:${s.color}" title="${esc(s.title)}">${s.marks}</div>`).join('')}</div>
   <div class="legend">${SECTIONS.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.title)}</span>`).join('')}</div>
-  ${PAPERS.length?`<h3 class="sectionTitle">أسئلة دورات سابقة</h3><div class="papersGrid">${[...new Set(PAPERS.map(p=>p.year))].sort((a,b)=>b-a).map(y=>`<div class="yr"><b>${y}</b>${PAPERS.filter(p=>p.year===y).map(p=>`<button class="chip" onclick="go('/paper/${p.id}')">${esc(p.session)}<small>${p.n} سؤال</small></button>`).join('')}</div>`).join('')}</div>`:''}
   <h3 class="sectionTitle">القوانين حسب أقسام الورقة</h3>
   <div class="rows">${SECTIONS.map(s=>{const p=sectionPct(s);return `
     <button class="row" onclick="go('/sec/${s.id}')"><span class="seal">${s.marks}<small>علامة</small></span>
       <span class="main"><b>${esc(s.title)}</b><small>${s.laws.length>1?s.laws.length+' تشريعات':esc(META[s.laws[0]].full)}</small><div class="bar"><i style="width:${p}%"></i></div></span>
-      <span class="pct">${p}%</span><span class="chev">‹</span></button>`}).join('')}</div>`;
+      <span class="pct">${p}%</span><span class="chev">‹</span></button>`}).join('')}</div>
+  ${PAPERS.length?`<h3 class="sectionTitle" style="margin-top:26px">أسئلة دورات سابقة</h3><div class="papersGrid">${[...new Set(PAPERS.map(p=>p.year))].sort((a,b)=>b-a).map(y=>`<div class="yr"><b>${y}</b>${PAPERS.filter(p=>p.year===y).map(p=>`<button class="chip" onclick="go('/paper/${p.id}')">${esc(p.session)}<small>${p.n} سؤال</small></button>`).join('')}</div>`).join('')}</div>`:''}
+  `;
 }
 function viewSection(id){
   const s=SECTIONS.find(x=>x.id===id); if(!s)return go('/leg');
